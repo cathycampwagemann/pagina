@@ -1,10 +1,11 @@
 from flask import Flask, request, jsonify, render_template_string
 import time
+import os
 
 app = Flask(__name__)
 
 # "Base de datos" super simple en memoria
-text_answers = []  # lista de strings
+text_answers = []  # lista de strings con las respuestas abiertas
 votes = {"a_favor": 0, "en_contra": 0}
 
 # Estado global para controlar el flujo
@@ -284,9 +285,9 @@ HTML_PAGE = r"""
                 showResults();
             }
         } catch (e) {
-            // Si falla, no hacemos nada especial
+            // nada
         } finally {
-            setTimeout(pollState, 2000);  // volver a preguntar en 2 segundos
+            setTimeout(pollState, 2000);
         }
     }
 
@@ -299,11 +300,8 @@ HTML_PAGE = r"""
 
     // Mostrar resultados en pantalla y gráfico
     async function showResults() {
-        // Ocultar tarjetas de preguntas
         q1Card.style.display = "none";
         q2Card.style.display = "none";
-
-        // Mostrar tarjeta de resultados
         resultsCard.style.display = "block";
 
         const data = await fetchResults();
@@ -354,7 +352,7 @@ HTML_PAGE = r"""
         });
     }
 
-    // Arrancar el "polling" del estado global
+    // Empezar a consultar el estado global
     pollState();
 </script>
 </body>
@@ -575,4 +573,29 @@ def get_state():
 
 @app.route("/admin/start_60", methods=["POST"])
 def admin_start_60():
-    """Inicia una cuenta regresiva de 60 seg
+    """Inicia una cuenta regresiva de 60 segundos (solo visual)."""
+    state["mode"] = "collect"
+    state["deadline"] = time.time() + 60
+    return ("", 204)
+
+@app.route("/admin/show_results", methods=["POST"])
+def admin_show_results():
+    """Cambia a modo resultados para todos los clientes."""
+    state["mode"] = "results"
+    state["deadline"] = None
+    return ("", 204)
+
+@app.route("/admin/reset", methods=["POST"])
+def admin_reset():
+    """Borra respuestas y vuelve a modo de recolección sin cuenta regresiva."""
+    text_answers.clear()
+    votes["a_favor"] = 0
+    votes["en_contra"] = 0
+    state["mode"] = "collect"
+    state["deadline"] = None
+    return ("", 204)
+
+if __name__ == "__main__":
+    # Para local o Render/otro PaaS
+    port = int(os.environ.get("PORT", 8000))
+    app.run(host="0.0.0.0", port=port)
