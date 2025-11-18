@@ -153,7 +153,7 @@ HTML_PAGE = r"""
     <!-- Pregunta 2 -->
     <div class="card" id="q2-card">
         <h2>Pregunta 2</h2>
-        <p>En general, ¿estás a favor o en contra del uso de la IA?</p>
+        <p>¿Estás a favor o en contra del rechazo de la cobertura del siniestro?</p>
         <div class="options">
             <div class="option-box" id="btn-a-favor" data-choice="a_favor">
                 A favor
@@ -599,3 +599,4 @@ if __name__ == "__main__":
     # Para local o Render/otro PaaS
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port)
+
